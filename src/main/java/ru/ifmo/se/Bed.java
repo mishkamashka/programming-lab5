@@ -1,5 +1,9 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.exceptions.NotEnoughMoneyException;
+import ru.ifmo.se.exceptions.NothingToRemoveException;
+import ru.ifmo.se.exceptions.TooMuchMoneyException;
+
 public class Bed {
     private boolean isReady = false;
     final double price = 1;

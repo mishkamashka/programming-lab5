@@ -1,6 +1,7 @@
 package ru.ifmo.se;
 
-import java.util.Timer;
+import ru.ifmo.se.enums.Material;
+import ru.ifmo.se.enums.Season;
 
 public class Boots extends Shoes {
     Season season = Season.DEMISEASON;

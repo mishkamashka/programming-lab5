@@ -1,5 +1,7 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.State;
+
 import java.util.ArrayList;
 
 public class Conversation implements TypeOfSpeech {

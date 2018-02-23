@@ -1,5 +1,7 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.Patch;
+
 public class Jeans extends GeneralClothes {
 
     public Jeans() {

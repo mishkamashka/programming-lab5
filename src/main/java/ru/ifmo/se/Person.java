@@ -1,5 +1,9 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.State;
+import ru.ifmo.se.exceptions.NotEnoughMoneyException;
+import ru.ifmo.se.exceptions.TooMuchMoneyException;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

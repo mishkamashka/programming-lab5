@@ -1,5 +1,5 @@
-package ru.ifmo.se;
+package ru.ifmo.se.enums;
 
-enum State {
+public enum State {
     BORED, INTERESTED, NEUTRAL, ABSENT, WAITING_FOR_ANSWER, ANGRY
 }

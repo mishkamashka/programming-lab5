@@ -1,5 +1,7 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.Material;
+
 public class Hat extends Accessories {
 
     public Hat() {

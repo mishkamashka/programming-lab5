@@ -1,5 +1,7 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.Material;
+
 public class Accessories extends Clothes {
     public Accessories() {
         super();

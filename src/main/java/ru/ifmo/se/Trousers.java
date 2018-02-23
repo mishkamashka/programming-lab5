@@ -1,5 +1,9 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.Material;
+import ru.ifmo.se.enums.Patch;
+import ru.ifmo.se.enums.Season;
+
 public class Trousers extends GeneralClothes {
     Season season = Season.DEMISEASON;
 

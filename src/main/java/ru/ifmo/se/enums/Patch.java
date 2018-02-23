@@ -1,5 +1,5 @@
-package ru.ifmo.se;
+package ru.ifmo.se.enums;
 
-enum Patch {
+public enum Patch {
     BLACK_PATCH, WHITE_PATCH, NONE, NO_COLOUR_PATCH
 }

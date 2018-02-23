@@ -1,5 +1,8 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.Material;
+import ru.ifmo.se.enums.Patch;
+
 import java.io.Serializable;
 
 public abstract class Clothes implements Serializable {

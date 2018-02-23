@@ -1,5 +1,8 @@
 package ru.ifmo.se;
 
+import ru.ifmo.se.enums.Material;
+import ru.ifmo.se.enums.Patch;
+
 public class Shirt extends GeneralClothes {
     public Shirt() {
         super();
