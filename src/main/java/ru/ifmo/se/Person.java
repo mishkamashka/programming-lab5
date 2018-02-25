@@ -90,10 +90,6 @@ public abstract class Person implements Serializable, Comparable {
         return shoes;
     }
 
-    /*public void addDownClothes(Clothes thing, ArrayList<Clothes> clothes){
-        clothes.add(thing); // won't work 'case we need contravariant things, generics are invariant
-    }*/
-
     public void addGeneralClothes(GeneralClothes thing, List<? super GeneralClothes> clothes) {
         if (thing == null)
             return;

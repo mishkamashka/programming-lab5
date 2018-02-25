@@ -11,8 +11,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Класс, реализующий консольное приложение для работы
- * с коллекцией в интерактиивном режиме.
+ * The App class implements the application which allow user
+ * to interact with the collection using console.
  */
 
 public class App {
@@ -21,6 +21,9 @@ public class App {
     Set<Person> collec = new TreeSet<>();
     File file = new File(filepath);
 
+    /**
+     * Starts the app.
+     */
     public void start() {
         this.load();
         while (true) {
@@ -59,7 +62,7 @@ public class App {
     }
 
     /**
-     * Очищает коллекцию, в случае пустой коллекции выводит сообщение об этом.
+     * Clears the collection and prints the message about it.
      */
     public void clear() {
         if (collec.isEmpty())
@@ -71,15 +74,15 @@ public class App {
     }
 
     /**
-     * Добавляет в коллекцию переданный в формате json объект.
+     * Adds new element given in json format to the collection.
      *
-     * @param sc для получения внутри метода объекта, который нужно добавить в коллекцию.
+     * @param sc needed to get object which has to be added to the collection.
      */
     public void addObject(Scanner sc) {
         StringBuilder tempString = new StringBuilder();
         tempString.append(sc.next());
         try {
-            this.collec.add(this.jsonToPerson(tempString.toString(), Known.class));
+            this.collec.add(this.jsonToObject(tempString.toString(), Known.class));
             System.out.println("Object has been added.");
         } catch (Exception e) {
             System.out.println("Something went wrong. Check your object and try again. For example of json format see \"help\" command.");
@@ -88,7 +91,7 @@ public class App {
     }
 
     /**
-     * Загружает объекты в коллекцию из файла.
+     * Loads objects to the collection from the file.
      */
     public void load() {
         try (Scanner sc = new Scanner(file)) {
@@ -106,7 +109,7 @@ public class App {
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     String jsonObjectAsString = jsonObject.toString();
-                    this.collec.add(this.jsonToPerson(jsonObjectAsString, Known.class));
+                    this.collec.add(this.jsonToObject(jsonObjectAsString, Known.class));
                 }
                 System.out.println("Collection has been loaded.");
             } catch (NullPointerException e) {
@@ -118,15 +121,15 @@ public class App {
     }
 
     /**
-     * Удаляет из коллекции все элементы, превышающие заданный, переданный в формате json.
+     * Removes all elements which are greater than given in json format one.
      *
-     * @param sc для получения внутри метода объекта, c которым производится сравнение.
+     * @param sc needed to get object which objects from th collection have to be compared to.
      */
     public void remove_greater(Scanner sc) {
         StringBuilder tempString = new StringBuilder();
         tempString.append(sc.next());
         try {
-            Person a = this.jsonToPerson(tempString.toString(), Known.class);
+            Person a = this.jsonToObject(tempString.toString(), Known.class);
             this.collec.removeIf(person -> a.compareTo(person) > 0);
             System.out.println("Objects greater than given have been removed.");
         } catch (Exception e) {
@@ -136,35 +139,46 @@ public class App {
     }
 
     /**
-     * Осуществляет сохранение коллекции в файл и останавливает работу приложения.
+     * Saves current collection to the file and quits the app.
      *
-     * @param sc передается для закрытия.
+     * @param sc needed to be closed.
      */
     public void quit(Scanner sc) {
+        this.save();
+        sc.close();
+        System.exit(0);
+    }
+
+    /**
+     * Saves current collection to the file.
+     */
+    public void save(){
         try (Writer writer = new FileWriter(file)) {
             Gson json = new GsonBuilder().create();
             for (Person person : this.collec) {
                 writer.write(json.toJson(person));
-                // writer.write("end");
             }
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            sc.close();
-            System.exit(0);
         }
     }
 
-
-    public <T> T jsonToPerson(String tempString, Class<T> classT) {
+    /**
+     * Converts json string to object of T class.
+     *
+     * @param tempString string in json format.
+     * @param classT class which string is needed to be converted to.
+     * @param <T> type of returned object.
+     * @return object of T class.
+     */
+    public <T> T jsonToObject(String tempString, Class<T> classT) {
         Gson json = new GsonBuilder().create();
-        T obj = json.fromJson(tempString, classT);
-        return obj;
+        return json.fromJson(tempString, classT);
     }
 
     /**
-     * Выводит текущее содержимое коллекции.
+     * Shows the current content of the collection.
      */
     public void showCollection() {
         if (this.collec.isEmpty())
@@ -175,27 +189,16 @@ public class App {
     }
 
     /**
-     * Выводит список команд, шаблон json формата объекта для ввода.
+     * Shows the list of commands and json-pattern for object input.
      */
     public void help() {
         System.out.println("Commands:\nclear - clear the collection;\nload - load the collection again;" +
                 "\nadd {element} - add new element to collection;\nremove_greater {element} - remove elements greater than given;" +
                 "\nquit - quit;\nhelp - get help;");
-        System.out.println("\nPattern for object Person input:\n{\"name\":\"Jack\",\"last_name\":\"Black\",\"age\":45}");
+        System.out.println("\nPattern for object Person input:\n{\"name\":\"Andy\",\"last_name\":\"Killins\",\"age\":45," +
+                "\"generalClothes\":[{\"colour\":\"white\",\"patches\":[\"WHITE_PATCH\",\"BLACK_PATCH\",\"NONE\",\"NONE\",\"NONE\"]," +
+                "\"material\":\"NONE\"}],\"shoes\":[{\"colour\":\"awesome\",\"patches\":[\"NONE\",\"NONE\",\"NONE\",\"NONE\",\"NONE\"]," +
+                "\"material\":\"NONE\"}],\"accessories\":[],\"state\":\"NEUTRAL\"}");
         System.out.println("\nHow objects are compared:\nObject A is greater than B if its name and last_name are greater than Bs.");
     }
 }
-
-
-        /*Person person = new Known("Frank");
-        person.setAge(5);
-        person.setLast_name("Heity");
-        person.addGeneralClothes(new Jacket("blue", Season.SUMMER), person.getGeneralClothes());
-        person.addGeneralClothes(new Shirt("yellow"), person.getGeneralClothes());
-        person.addGeneralClothes(new Jeans("black with stripes"), person.getGeneralClothes());
-        person.addShoes(new Trainers("green"), person.getShoes());
-        this.collec.add(person);
-        Person person1 = new Known("Kolh");
-        person.setAge(45);
-        person.setLast_name("Veity");
-        this.collec.add(person1);*/
