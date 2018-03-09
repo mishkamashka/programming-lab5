@@ -144,7 +144,6 @@ public class App {
      * @param sc needed to be closed.
      */
     public void quit(Scanner sc) {
-        this.save();
         sc.close();
         System.exit(0);
     }
