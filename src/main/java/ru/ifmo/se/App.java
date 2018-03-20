@@ -53,13 +53,17 @@ public class App {
                 case "show":
                     this.showCollection();
                     break;
+                case "describe":
+                    this.describeCollection();
+                    break;
                 case "help":
                     this.help();
                     break;
                 default:
                     System.out.println("Not valid command. Try one of those:\nhelp - get help;\nclear - clear the collection;" +
                             "\nload - load the collection again;\nadd {element} - add new element to collection;" +
-                            "\nshow - show current collection;\nremove_greater {element} - remove elements greater than given;" +
+                            "\nshow - show current collection;\ndescribe - show objects from current collection with descriptions;" +
+                            "\nremove_greater {element} - remove elements greater than given;" +
                             "\nquit - quit;");
             }
         }
@@ -157,9 +161,24 @@ public class App {
      */
     public void save(){
         try (Writer writer = new FileWriter(file)) {
-            Gson json = new GsonBuilder().create();
+            RuntimeTypeAdapterFactory<GeneralClothes> genClothesAdapterFactory = RuntimeTypeAdapterFactory.of(GeneralClothes.class, "type")
+                    .registerSubtype(Shirt.class, "Shirt")
+                    .registerSubtype(Jeans.class, "Jeans")
+                    .registerSubtype(Jacket.class, "Jacket")
+                    .registerSubtype(Trousers.class, "Trousers");
+            RuntimeTypeAdapterFactory<Shoes> shoesAdapterFactory = RuntimeTypeAdapterFactory.of(Shoes.class, "type")
+                    .registerSubtype(Boots.class, "Shoes")
+                    .registerSubtype(Trainers.class, "Trainers");
+            RuntimeTypeAdapterFactory<Accessories> accessoriesRuntimeTypeAdapterFactory = RuntimeTypeAdapterFactory.of(Accessories.class, "type")
+                    .registerSubtype(Glasses.class, "Glassess")
+                    .registerSubtype(Hat.class, "Hat");
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapterFactory(genClothesAdapterFactory)
+                    .registerTypeAdapterFactory(shoesAdapterFactory)
+                    .registerTypeAdapterFactory(accessoriesRuntimeTypeAdapterFactory)
+                    .create();
             for (Person person : this.collec) {
-                writer.write(json.toJson(person));
+                writer.write(gson.toJson(person));
             }
             writer.close();
         } catch (IOException e) {
@@ -176,8 +195,25 @@ public class App {
      * @return object of T class.
      */
     public <T> T jsonToObject(String tempString, Class<T> classT) {
-        Gson json = new GsonBuilder().create();
-        return json.fromJson(tempString, classT);
+        RuntimeTypeAdapterFactory<GeneralClothes> genClothesAdapterFactory =
+                RuntimeTypeAdapterFactory.of(GeneralClothes.class, "type")
+                .registerSubtype(Shirt.class, "Shirt")
+                .registerSubtype(Jeans.class, "Jeans")
+                .registerSubtype(Jacket.class, "Jacket")
+                .registerSubtype(Trousers.class, "Trousers");
+        RuntimeTypeAdapterFactory<Shoes> shoesAdapterFactory = RuntimeTypeAdapterFactory.of(Shoes.class, "type")
+                .registerSubtype(Boots.class, "Shoes")
+                .registerSubtype(Trainers.class, "Trainers");
+        RuntimeTypeAdapterFactory<Accessories> accessoriesRuntimeTypeAdapterFactory = RuntimeTypeAdapterFactory.of(Accessories.class, "type")
+                .registerSubtype(Glasses.class, "Glassess")
+                .registerSubtype(Hat.class, "Hat");
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapterFactory(genClothesAdapterFactory)
+                .registerTypeAdapterFactory(shoesAdapterFactory)
+                .registerTypeAdapterFactory(accessoriesRuntimeTypeAdapterFactory)
+                .create();
+        //Gson json = new GsonBuilder().create();
+        return gson.fromJson(tempString, classT);
     }
 
     /**
@@ -191,6 +227,14 @@ public class App {
         }
     }
 
+    public void describeCollection() {
+        if (this.collec.isEmpty())
+            System.out.println("Collection is empty.");
+        for (Person person : this.collec) {
+            person.describe();
+        }
+    }
+
     /**
      * Shows the list of commands and json-pattern for object input.
      */
@@ -199,9 +243,8 @@ public class App {
                 "\nadd {element} - add new element to collection;\nremove_greater {element} - remove elements greater than given;" +
                 "\nquit - quit;\nhelp - get help;");
         System.out.println("\nPattern for object Person input:\n{\"name\":\"Andy\",\"last_name\":\"Killins\",\"age\":45," +
-                "\"generalClothes\":[{\"colour\":\"white\",\"patches\":[\"WHITE_PATCH\",\"BLACK_PATCH\",\"NONE\",\"NONE\",\"NONE\"]," +
-                "\"material\":\"NONE\"}],\"shoes\":[{\"colour\":\"awesome\",\"patches\":[\"NONE\",\"NONE\",\"NONE\",\"NONE\",\"NONE\"]," +
-                "\"material\":\"NONE\"}],\"accessories\":[],\"state\":\"NEUTRAL\"}");
+                "\"generalClothes\":[{\"type\":\"Jacket\",\"colour\":\"white\",\"patches\":[\"WHITE_PATCH\",\"BLACK_PATCH\"," +
+                "\"NONE\",\"NONE\",\"NONE\"],\"material\":\"NONE\"}],\"shoes\":[],\"accessories\":[],\"state\":\"NEUTRAL\"}");
         System.out.println("\nHow objects are compared:\nObject A is greater than B if its name and last_name are greater than Bs.");
     }
 }

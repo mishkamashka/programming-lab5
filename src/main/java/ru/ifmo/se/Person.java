@@ -28,6 +28,11 @@ public abstract class Person implements Serializable, Comparable {
         this.state = State.NEUTRAL;
     }
 
+    public Person(String name, String last_name) {
+        this.name = name;
+        this.last_name = last_name;
+    }
+
     public String getName() {
         return name;
     }
@@ -111,15 +116,18 @@ public abstract class Person implements Serializable, Comparable {
     public void describe() {
         StringBuilder tempString = new StringBuilder();
         tempString.append(this.toString());
-        if (this.generalClothes.size() != 0 || this.shoes.size() != 0 || this.accessories.size() != 0)
+        if (this.generalClothes !=null && (this.generalClothes.size() != 0 || this.shoes.size() != 0 || this.accessories.size() != 0)) {
             tempString.append(" is wearing ");
-        tempString.append(this.getClothes(this.generalClothes));
-        if (this.shoes.size() != 0)
+            tempString.append(this.getClothes(this.generalClothes));
+        }
+        if (this.shoes != null && this.shoes.size() != 0) {
             tempString.append(", ");
-        tempString.append(this.getClothes(this.shoes));
-        if (this.accessories.size() != 0)
+            tempString.append(this.getClothes(this.shoes));
+        }
+        if (this.accessories != null && this.accessories.size() != 0) {
             tempString.append(", ");
-        tempString.append(this.getClothes(this.accessories));
+            tempString.append(this.getClothes(this.accessories));
+        }
         if (tempString.length() > this.toString().length())
             tempString.append(".");
         System.out.println(tempString.toString());
