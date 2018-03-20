@@ -25,11 +25,15 @@ public class App {
      * Starts the app.
      */
     public void start() {
+        if (filepath.equals("C:\\files\\null")) {
+            System.out.println("No file name set or environment variable FILENAME does not exist.");
+            System.exit(0);
+        }
         this.load();
         while (true) {
+            System.out.println();
             Scanner comin = new Scanner(System.in);
             String command = comin.next();
-            System.out.println();
             switch (command) {
                 case "clear":
                     this.clear();
