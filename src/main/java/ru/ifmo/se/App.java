@@ -1,7 +1,6 @@
 package ru.ifmo.se;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,98 +9,84 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeSet;
 
-/**
- * The App class implements the application which allow user
- * to interact with the collection using console.
- */
-
 public class App {
-    private final String filename = System.getenv("FILENAME");
-    private final String filepath = "C:\\files\\" + filename;
-    Set<Person> collec = new TreeSet<>();
-    File file = new File(filepath);
 
-    /**
-     * Starts the app.
-     */
+    private final static String filename = System.getenv("FILENAME");
+    private final static String currentdir = System.getProperty("user.dir");
+    private static String filepath;
+    private static File file;
+    Set<Person> collec = new TreeSet<>();
+
     public void start() {
-        if (filepath.equals("C:\\files\\null")) {
-            System.out.println("No file name set or environment variable FILENAME does not exist.");
-            System.exit(0);
+        this.filemaker();
+        try {
+            this.load();
+        }catch (IOException e) {
+            e.printStackTrace();
         }
-        this.load();
+        Scanner sc;
         while (true) {
             System.out.println();
-            Scanner comin = new Scanner(System.in);
-            String command = comin.next();
-            switch (command) {
-                case "clear":
-                    this.clear();
-                    break;
-                case "load":
-                    this.load();
-                    break;
-                case "add":
-                    this.addObject(comin);
-                    break;
-                case "remove_greater":
-                    this.remove_greater(comin);
-                    break;
-                case "quit":
-                    this.quit(comin);
-                    break;
-                case "show":
-                    this.showCollection();
-                    break;
-                case "describe":
-                    this.describeCollection();
-                    break;
-                case "help":
-                    this.help();
-                    break;
-                default:
-                    System.out.println("Not valid command. Try one of those:\nhelp - get help;\nclear - clear the collection;" +
-                            "\nload - load the collection again;\nadd {element} - add new element to collection;" +
-                            "\nshow - show current collection;\ndescribe - show objects from current collection with descriptions;" +
-                            "\nremove_greater {element} - remove elements greater than given;" +
-                            "\nquit - quit;");
+            sc = new Scanner(System.in);
+            String command;
+            String input;
+            String[] buf;
+            String data = "";
+            while (true) {
+                input = sc.nextLine();
+                buf = input.split(" ");
+                command = buf[0];
+                if (buf.length > 1)
+                    data = buf[1];
+                switch (command) {
+                    case "clear":
+                        this.clear();
+                        break;
+                    case "load":
+                        try {
+                            this.load();
+                        }catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case "add":
+                        this.addObject(data);
+                        break;
+                    case "remove_greater":
+                        this.removeGreater(data);
+                        break;
+                    case "quit":
+                        this.quit();
+                        break;
+                    case "show":
+                        this.show();
+                        break;
+                    case "describe":
+                        this.describe();
+                        break;
+                    case "help":
+                        this.help();
+                        break;
+                    default:
+                        System.out.println("Not valid command. Try one of those:\nhelp - get help;\nclear - clear the collection;" +
+                                "\nload - load the collection again;\nadd {element} - add new element to collection;" +
+                                "\nshow - show current collection;\ndescribe - show objects from current collection with descriptions;" +
+                                "\nremove_greater {element} - remove elements greater than given;" +
+                                "\nquit - quit;");
+                }
             }
         }
     }
 
-    /**
-     * Clears the collection and prints the message about it.
-     */
-    public void clear() {
-        if (collec.isEmpty())
-            System.out.println("There is nothing to remove, collection is empty.");
-        else {
-            collec.clear();
-            System.out.println("Collection has been cleared.");
-        }
+    private static void filemaker() {
+        if (currentdir.startsWith("/")) {
+            filepath = currentdir + "/" + filename;
+        } else
+            filepath = currentdir + "\\" + filename;
+        file = new File(filepath);
     }
 
-    /**
-     * Adds new element given in json format to the collection.
-     *
-     * @param sc needed to get object which has to be added to the collection.
-     */
-    public void addObject(Scanner sc) {
-        StringBuilder tempString = new StringBuilder();
-        tempString.append(sc.next());
-        try {
-            this.collec.add(this.jsonToObject(tempString.toString(), Known.class));
-            System.out.println("Object has been added.");
-        } catch (Exception e) {
-            System.out.println("Something went wrong. Check your object and try again. For example of json format see \"help\" command.");
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Loads objects to the collection from the file.
-     */
-    public void load() {
+    private void load() throws IOException {
         try (Scanner sc = new Scanner(file)) {
             StringBuilder tempString = new StringBuilder();
             tempString.append('[');
@@ -117,134 +102,86 @@ public class App {
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     String jsonObjectAsString = jsonObject.toString();
-                    this.collec.add(this.jsonToObject(jsonObjectAsString, Known.class));
+                    this.collec.add(JsonConverter.jsonToObject(jsonObjectAsString, Known.class));
                 }
-                System.out.println("Collection has been loaded.");
+                System.out.println("Connection has been loaded.");
             } catch (NullPointerException e) {
                 System.out.println("File is empty.");
             }
         } catch (FileNotFoundException e) {
+            System.out.println("Collection can not be loaded.\nFile " + filename + " is not accessible: it does not exist or permission denied.");
             e.printStackTrace();
         }
     }
 
-    /**
-     * Removes all elements which are greater than given in json format one.
-     *
-     * @param sc needed to get object which objects from th collection have to be compared to.
-     */
-    public void remove_greater(Scanner sc) {
-        StringBuilder tempString = new StringBuilder();
-        tempString.append(sc.next());
+    protected void save(){
         try {
-            Person a = this.jsonToObject(tempString.toString(), Known.class);
-            this.collec.removeIf(person -> a.compareTo(person) > 0);
-            System.out.println("Objects greater than given have been removed.");
-        } catch (Exception e) {
-            System.out.println("Something went wrong. Check your object and try again.\nFor example of json format try \"help\" command.");
+            Writer writer = new FileWriter(file);
+            //Server.collec.forEach(person -> writer.write(Connection.objectToJson(person)));
+            for (Person person: this.collec){
+                writer.write(JsonConverter.objectToJson(person));
+            }
+            writer.close();
+            System.out.println("Collection has been saved.");
+        } catch (IOException e) {
+            System.out.println("Collection can not be saved.\nFile "+filename+" is not accessible: it does not exist or permission denied.");
             e.printStackTrace();
         }
     }
 
-    /**
-     * Saves current collection to the file and quits the app.
-     *
-     * @param sc needed to be closed.
-     */
-    public void quit(Scanner sc) {
-        sc.close();
+    private void show() {
+        if (this.collec.isEmpty())
+            System.out.println("Collection is empty.");
+        this.collec.forEach(person -> System.out.println(person.toString()));
+        System.out.println();
+    }
+
+    private void describe() {
+        this.collec.forEach(person -> person.describe());
+        System.out.println();
+    }
+
+    private void quit() {
         System.exit(0);
     }
 
-    /**
-     * Saves current collection to the file.
-     */
-    public void save(){
-        try (Writer writer = new FileWriter(file)) {
-            RuntimeTypeAdapterFactory<GeneralClothes> genClothesAdapterFactory = RuntimeTypeAdapterFactory.of(GeneralClothes.class, "type")
-                    .registerSubtype(Shirt.class, "Shirt")
-                    .registerSubtype(Jeans.class, "Jeans")
-                    .registerSubtype(Jacket.class, "Jacket")
-                    .registerSubtype(Trousers.class, "Trousers");
-            RuntimeTypeAdapterFactory<Shoes> shoesAdapterFactory = RuntimeTypeAdapterFactory.of(Shoes.class, "type")
-                    .registerSubtype(Boots.class, "Shoes")
-                    .registerSubtype(Trainers.class, "Trainers");
-            RuntimeTypeAdapterFactory<Accessories> accessoriesRuntimeTypeAdapterFactory = RuntimeTypeAdapterFactory.of(Accessories.class, "type")
-                    .registerSubtype(Glasses.class, "Glassess")
-                    .registerSubtype(Hat.class, "Hat");
-            Gson gson = new GsonBuilder()
-                    .registerTypeAdapterFactory(genClothesAdapterFactory)
-                    .registerTypeAdapterFactory(shoesAdapterFactory)
-                    .registerTypeAdapterFactory(accessoriesRuntimeTypeAdapterFactory)
-                    .create();
-            for (Person person : this.collec) {
-                writer.write(gson.toJson(person));
-            }
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+    private void removeGreater(String data) {
+        Person a = JsonConverter.jsonToObject(data, Known.class);
+        System.out.println(a.toString());
+        this.collec.removeIf(person -> a.compareTo(person) > 0);
+        System.out.println("Objects greater than given have been removed.\n");
+    }
+
+    private void addObject(String data) {
+        try {
+            if ((JsonConverter.jsonToObject(data, Known.class).getName() != null)) {
+                this.collec.add(JsonConverter.jsonToObject(data, Known.class));
+                System.out.println("Object " + JsonConverter.jsonToObject(data, Known.class).toString() + " has been added.\n");
+            } else System.out.println("Object null can not be added.");
+        } catch (NullPointerException | JsonSyntaxException e) {
+            System.out.println("Something went wrong. Check your object and try again. For example of json format see \"help\" command.\n");
+            System.out.println(e.toString());
         }
     }
 
-    /**
-     * Converts json string to object of T class.
-     *
-     * @param tempString string in json format.
-     * @param classT class which string is needed to be converted to.
-     * @param <T> type of returned object.
-     * @return object of T class.
-     */
-    public <T> T jsonToObject(String tempString, Class<T> classT) {
-        RuntimeTypeAdapterFactory<GeneralClothes> genClothesAdapterFactory =
-                RuntimeTypeAdapterFactory.of(GeneralClothes.class, "type")
-                .registerSubtype(Shirt.class, "Shirt")
-                .registerSubtype(Jeans.class, "Jeans")
-                .registerSubtype(Jacket.class, "Jacket")
-                .registerSubtype(Trousers.class, "Trousers");
-        RuntimeTypeAdapterFactory<Shoes> shoesAdapterFactory = RuntimeTypeAdapterFactory.of(Shoes.class, "type")
-                .registerSubtype(Boots.class, "Shoes")
-                .registerSubtype(Trainers.class, "Trainers");
-        RuntimeTypeAdapterFactory<Accessories> accessoriesRuntimeTypeAdapterFactory = RuntimeTypeAdapterFactory.of(Accessories.class, "type")
-                .registerSubtype(Glasses.class, "Glassess")
-                .registerSubtype(Hat.class, "Hat");
-        Gson gson = new GsonBuilder()
-                .registerTypeAdapterFactory(genClothesAdapterFactory)
-                .registerTypeAdapterFactory(shoesAdapterFactory)
-                .registerTypeAdapterFactory(accessoriesRuntimeTypeAdapterFactory)
-                .create();
-        //Gson json = new GsonBuilder().create();
-        return gson.fromJson(tempString, classT);
-    }
-
-    /**
-     * Shows the current content of the collection.
-     */
-    public void showCollection() {
-        if (this.collec.isEmpty())
-            System.out.println("Collection is empty.");
-        for (Person person : this.collec) {
-            System.out.println(person.toString());
+    private void clear() {
+        if (collec.isEmpty())
+            System.out.println("There is nothing to remove, collection is empty.");
+        else {
+            collec.clear();
+            System.out.println("Collection has been cleared.");
         }
     }
 
-    public void describeCollection() {
-        if (this.collec.isEmpty())
-            System.out.println("Collection is empty.");
-        for (Person person : this.collec) {
-            person.describe();
-        }
-    }
-
-    /**
-     * Shows the list of commands and json-pattern for object input.
-     */
-    public void help() {
+    private void help() {
         System.out.println("Commands:\nclear - clear the collection;\nload - load the collection again;" +
+                "\nshow - show the collection;\ndescribe - show the collection with descriptions;" +
                 "\nadd {element} - add new element to collection;\nremove_greater {element} - remove elements greater than given;" +
-                "\nquit - quit;\nhelp - get help;");
-        System.out.println("\nPattern for object Person input:\n{\"name\":\"Andy\",\"last_name\":\"Killins\",\"age\":45," +
-                "\"generalClothes\":[{\"type\":\"Jacket\",\"colour\":\"white\",\"patches\":[\"WHITE_PATCH\",\"BLACK_PATCH\"," +
-                "\"NONE\",\"NONE\",\"NONE\"],\"material\":\"NONE\"}],\"shoes\":[],\"accessories\":[],\"state\":\"NEUTRAL\"}");
-        System.out.println("\nHow objects are compared:\nObject A is greater than B if its name and last_name are greater than Bs.");
+                "\nsave - save changes on server;\nq - quit without saving;\nqw - save on server and quit;\nhelp - get help;\n" +
+                "save_file - save current server collection to file;\nload_file - load collection on server from file.");
+        System.out.println("\nPattern for object Person input:\n{\"name\":\"Andy\",\"last_name\":\"Black\"}");
+        System.out.println("\nHow objects are compared:\nObject A is greater than B if it stands further from the door B does. (That's weird but that's the task.)\n");
+        System.out.println("Collection is saved to file when server shuts down or \"save_file\" command.");
     }
 }
